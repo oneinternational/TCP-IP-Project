@@ -9,26 +9,22 @@
 #define BUF_SIZE 1024
 #define MAX_CLNT 256
 char QeArray[4][400]={
-    "¾È³çÇÏ¼¼¿ä Sangho's Free Chat ÀÔ´Ï´Ù.\n\
-    »ı¼ºÇÏ½Å ´Ğ³×ÀÓÀÌ ÀÖÀ¸½Ã´Ù¸é '1'À» ¾øÀ¸½Ã´Ù¸é '2'¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä",
-    "Sangho's Free Chat ÀÌ¿ëÀ» À§ÇÑ °£´ÜÇÑ Á¤º¸ ÀÔ·ÂÀ» ÁøÇàÇÏµµ·Ï ÇÏ°Ú½À´Ï´Ù.\n\n\
-    Sangho's Free Chat ¿¡¼­ »ç¿ëÇÏ½Ç ´Ğ³×ÀÓÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä(Áßº¹ºÒ°¡)\n\
-    »ç¿ëÇÏ½Ç ´Ğ³×ÀÓ : ",
-    "»ç¿ëÀÚ´ÔÀÇ ¼ºÇÔÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä\n\
-    ¼ºÇÔ : ",
-    "»ç¿ëÀÚ´ÔÀÌ ¼±ÅÃÇÏ½Å ´Ğ³×ÀÓÀÌ ¼º°øÀûÀ¸·Î »ı¼ºµÇ¾ú½À´Ï´Ù.\n\
-    »ı¼ºÇÏ½Å ´Ğ³×ÀÓÀ» ÅëÇØ Sangho's Free ChatÀ» ÀÌ¿ëÇÏ¼¼¿ä.(Àá½Ã ÈÄ ´Ğ³×ÀÓ ÀÔ·Â È­¸éÀ¸·Î ÀüÈ¯)"
-}; //Áú¹® ÀúÀå ¹®ÀÚ¿­ 2Â÷¿ø ¹è¿­
-std::map<SOCKET, std::string> map_SockNick; // ¼ÒÄÏ°ú ´Ğ³×ÀÓ
-std::map<std::string, std::string> map_Nick_Name; //´Ğ³×ÀÓ ÀÌ¸§
-std::list<std::string> list_Nick;
+    "ì•ˆë…•í•˜ì„¸ìš” Sangho's Free Chat ì…ë‹ˆë‹¤.\nìƒì„±í•˜ì‹  ë‹‰ë„¤ì„ì´ ìˆìœ¼ì‹œë‹¤ë©´ '1'ì„ ì—†ìœ¼ì‹œë‹¤ë©´ '2'ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”",
+    "Sangho's Free Chat ì´ìš©ì„ ìœ„í•œ ê°„ë‹¨í•œ ì •ë³´ ì…ë ¥ì„ ì§„í–‰í•˜ë„ë¡ í•˜ê² ìŠµë‹ˆë‹¤.\nì‚¬ìš©í•˜ì‹¤ ë‹‰ë„¤ì„ì„ ì…ë ¥í•´ì£¼ì„¸ìš”(ì¤‘ë³µë¶ˆê°€)",
+    "ì‚¬ìš©ìë‹˜ì˜ ì„±í•¨ì„ ì…ë ¥í•´ì£¼ì„¸ìš”",
+    "ì‚¬ìš©ìë‹˜ì´ ì„ íƒí•˜ì‹  ë‹‰ë„¤ì„ì´ ì„±ê³µì ìœ¼ë¡œ ìƒì„±ë˜ì—ˆìŠµë‹ˆë‹¤.\në¡œê·¸ì¸ í™”ë©´ìœ¼ë¡œ ì „í™˜ì„ ì›í•˜ì‹œë©´ '1'ë²ˆì„ ëˆŒë ¤ì£¼ì„¸ìš”"
+}; //ì§ˆë¬¸ ì €ì¥ ë¬¸ìì—´ 2ì°¨ì› ë°°ì—´
+std::map<SOCKET, std::string> map_SockNick; // ì†Œì¼“ê³¼ ë‹‰ë„¤ì„
+std::map<std::string, std::string> map_Nick_Name; //ë‹‰ë„¤ì„ ì´ë¦„
+std::list<std::string> list_Nick;//ë‹‰ë„¤ì„
 unsigned WINAPI HandleClnt(void* arg);
-unsigned WINAPI WelcomeClnt(void* newUser);
+unsigned WINAPI AllProcess(void* newUser);
+
 void SendMsg(char * msg, int len);
 void ErrorHandling(char* msg);
-int ToFromMsg(SOCKET newSock);
+int NickSet(SOCKET newSock);
 int clntCnt = 0;
-SOCKET clntSocks[MAX_CLNT]; //¼ÒÄÏÀ» ´ã´Â ¹è¿­
+SOCKET clntSocks[MAX_CLNT]; //ì†Œì¼“ì„ ë‹´ëŠ” ë°°ì—´
 HANDLE hMutex;
 
 
@@ -71,60 +67,80 @@ int main(int argc, char *argv[])
         ReleaseMutex(hMutex);
         printf("Connected client IP : %s \n" ,inet_ntoa(clntAdr.sin_addr));
         hThread = 
-            (HANDLE)_beginthreadex(NULL, 0, WelcomeClnt, (void*)&hClntSock, 0, NULL);
+            (HANDLE)_beginthreadex(NULL, 0, AllProcess, (void*)&hClntSock, 0, NULL);
     }
     closesocket(hServSock);
     WSACleanup();
     return 0;
 }
 
-unsigned WINAPI WelcomeClnt(void* newUser)
+unsigned WINAPI AllProcess(void* newUser)
 {
     SOCKET ClntSock = *((SOCKET*)newUser);
     int caseNum = 1 , returnValue;
     char msgTo[BUF_SIZE];
     char msgFrom[BUF_SIZE];
+    std::list<std::string>::iterator iter;
+    int i = 0;
     while(1)
     {
         switch(caseNum)
         {
-        case 1:
-            if((returnValue = ToFromMsg(ClntSock)) == 10)
+        case 1://ë‹‰ë„¤ì„ ìƒì„± process
+            returnValue = NickSet(ClntSock);
+
+            if(returnValue == 10)//ì˜¤ë¥˜ì²˜ë¦¬
+            {
+                closesocket(ClntSock);
                 return 0;
-            else if((returnValue = ToFromMsg(ClntSock)) == 2)
+            }
+            else if(returnValue == 2)//ë‹‰ë„¤ì„ ì¡´ì¬ or ì™„ë£Œ ë¦¬í„´ ê°’
             {
                 caseNum = 2;
                 continue;
             }
             break;
-        case 2:
-            std::cout << "·Î±×ÀÎ ÆäÀÌÁö" << std::endl;
+        case 2://ë‹‰ë„¤ì„ìœ¼ë¡œ ì…ì¥ process
+            std::cout << "í˜„ì¬ ì„œë²„ì— ë“±ë¡ëœ ë‹‰ë„¤ì„" <<std::endl;
+            for(iter = list_Nick.begin(); iter != list_Nick.end(); iter++)
+            {
+                std::cout << *iter << std::endl;
+            }
+            std::cout << "í˜„ì¬ ì ‘ì†í•œ ë‹‰ë„¤ì„" << std::endl;
+
+            std::cout << map_SockNick.at(clntSocks[0]) << std::endl;
+            Sleep(10000);
             break;
+        case 3://ì…ì¥ í›„ ì¹œêµ¬ì¶”ê°€í•˜ê¸°/ì ‘ì† ì¹œêµ¬ ë³´ê¸°/ 1:1 ëŒ€í™” ê±¸ê¸°/ ëœë¤ ë‹¤ì¤‘ ì±„íŒ…ë°© ì„ íƒ
+
+        case 4://~~ ë‚´ì¼ 
         }
     }
 
 }
 
-int ToFromMsg(SOCKET newSock)
+int NickSet(SOCKET newSock)
 {
-    // SOCKET newSock 
-    // = *((SOCKET*)sock);
     char msgFrom[BUF_SIZE];
     int strlen = 0, turnCnt = 0, duplication = 0;
     std::string name, nick;
     while(1)
     {
-        send(newSock, QeArray[turnCnt], sizeof(QeArray[turnCnt]), 0);// ÁÖ°í
-        if((strlen = recv(newSock, msgFrom, sizeof(msgFrom), 0)) == -1)// ¹Ş°í
+        send(newSock, QeArray[turnCnt], sizeof(QeArray[turnCnt]), 0);// ì£¼ê³ 
+        strlen = recv(newSock, msgFrom, BUF_SIZE, 0);
+        std::cout << turnCnt << std::endl;
+        std::cout << strlen << std::endl;
+        if(strlen  == -1)// ë°›ê³ 
         {
             std::cerr << "can't receive a message" << std::endl;
-            return 10;//¸ø ÀĞ¾úÀ» ¶§ ¿¡·¯ Ã³¸®
+            return 10;//ëª» ì½ì—ˆì„ ë•Œ ì—ëŸ¬ ì²˜ë¦¬
         }
-        else if(turnCnt == 0 && msgFrom == "1") // ´Ğ³×ÀÓÀÌ ÀÖÀ¸½Ã¸é 1¹ø
-            return 2; // ´Ğ³×ÀÓ ÀÖÀ» ¶§
-        else if (turnCnt == 0 && (msgFrom != "1" && msgFrom != "2"))//ÁöÁ¤µÈ ¹øÈ£ ´©¸£Áö ¾Ê¾ÒÀ» ¶§
+        // std::cout << msgFrom << std::endl;
+        else if(turnCnt == 0 && std::string(msgFrom) == "1") // ë‹‰ë„¤ì„ì´ ìˆìœ¼ì‹œë©´ 1ë²ˆ
+            return 2; // ë‹‰ë„¤ì„ ìˆì„ ë•Œ
+        else if (turnCnt == 0 && (std::string(msgFrom) == "1" && std::string(msgFrom) == "2"))//ì§€ì •ëœ ë²ˆí˜¸ ëˆ„ë¥´ì§€ ì•Šì•˜ì„ ë•Œ
             continue;
-        else if (turnCnt == 1)//ÀÔ·ÂµÈ ´Ğ³×ÀÓ °Ë»ç
+        else if (turnCnt == 1)//ì…ë ¥ëœ ë‹‰ë„¤ì„ ê²€ì‚¬
         {
             std::list<std::string>::iterator iter;
             std::string msgToString = std::string(msgFrom);
@@ -143,49 +159,51 @@ int ToFromMsg(SOCKET newSock)
         else if (turnCnt == 2)
         {
             name = std::string(msgFrom);
-            map_SockNick.insert({newSock, nick}); // ¼ÒÄÏ°ú ´Ğ³×ÀÓ
-            map_Nick_Name.insert({nick, name});                        //´Ğ³×ÀÓ°ú ÀÌ¸§
-            send(newSock, QeArray[turnCnt+1], sizeof(QeArray[turnCnt]), 0); //´Ğ³×ÀÓ »ı¼º ¿Ï·á
-            return 2;// ¿Ï·á ÄÚµå
+            map_SockNick.insert({newSock, nick}); // ì†Œì¼“ê³¼ ë‹‰ë„¤ì„
+            map_Nick_Name.insert({nick, name});
+            list_Nick.push_back(nick);                        //ë‹‰ë„¤ì„ê³¼ ì´ë¦„
+            send(newSock, QeArray[turnCnt+1], sizeof(QeArray[turnCnt]), 0); //ë‹‰ë„¤ì„ ìƒì„± ì™„ë£Œ
+            return 2;// ì™„ë£Œ ì½”ë“œ
         }
         turnCnt +=1;
     }
+    return 0;
 } 
 
 
-unsigned WINAPI HandleClnt(void * arg)
-{
-	SOCKET hClntSock=*((SOCKET*)arg);
-	int strLen=0, i;
-	char msg[BUF_SIZE];
+// unsigned WINAPI HandleClnt(void * arg)
+// {
+// 	SOCKET hClntSock=*((SOCKET*)arg);
+// 	int strLen=0, i;
+// 	char msg[BUF_SIZE];
 	
-	while((strLen=recv(hClntSock, msg, sizeof(msg), 0))!=0)
-		SendMsg(msg, strLen); 
+// 	while((strLen=recv(hClntSock, msg, sizeof(msg), 0))!=0)
+// 		SendMsg(msg, strLen); 
 	
-	WaitForSingleObject(hMutex, INFINITE);
-	for(i=0; i<clntCnt; i++)   // remove disconnected client
-	{
-		if(hClntSock==clntSocks[i])
-		{
-			while(i++<clntCnt-1)
-				clntSocks[i]=clntSocks[i+1];
-			break;
-		}
-	}
-	clntCnt--;
-	ReleaseMutex(hMutex);
-	closesocket(hClntSock);
-	return 0;
-}
-void SendMsg(char * msg, int len)   // send to all
-{
-	int i;
-	WaitForSingleObject(hMutex, INFINITE);
-	for(i=0; i<clntCnt; i++)
-		send(clntSocks[i], msg, len, 0);
+// 	WaitForSingleObject(hMutex, INFINITE);
+// 	for(i=0; i<clntCnt; i++)   // remove disconnected client
+// 	{
+// 		if(hClntSock==clntSocks[i])
+// 		{
+// 			while(i++<clntCnt-1)
+// 				clntSocks[i]=clntSocks[i+1];
+// 			break;
+// 		}
+// 	}
+// 	clntCnt--;
+// 	ReleaseMutex(hMutex);
+// 	closesocket(hClntSock);
+// 	return 0;
+// }
+// void SendMsg(char * msg, int len)   // send to all
+// {
+// 	int i;
+// 	WaitForSingleObject(hMutex, INFINITE);
+// 	for(i=0; i<clntCnt; i++)
+// 		send(clntSocks[i], msg, len, 0);
 
-	ReleaseMutex(hMutex);
-}
+// 	ReleaseMutex(hMutex);
+// }
 
 void ErrorHandling(char*msg)
 {
