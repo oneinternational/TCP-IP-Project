@@ -25,8 +25,63 @@ PURPLE = 13,
 YELLOW = 14,		
 WHITE = 15		
 } COLOR;
-
-void textcolor(int colorNum);
+class ImgArray
+{
+private:
+    int logo[9][45]={
+    {7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7},
+    {7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+    {7,0,0,1,1,0,0,2,0,0,2,0,0,3,3,0,0,4,4,4,4,4,0,0,1,1,0,0,2,0,0,2,0,0,3,3,0,0,4,4,4,4,4,0,7},
+    {7,0,1,0,0,1,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,1,0,0,1,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,7},
+    {7,0,1,0,0,0,0,2,2,2,2,0,3,3,3,3,0,0,0,4,0,0,0,1,0,0,0,0,2,2,2,2,0,3,3,3,3,0,0,0,4,0,0,0,7},
+    {7,0,1,0,0,1,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,1,0,0,1,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,7},
+    {7,0,0,1,1,0,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,0,1,1,0,0,2,0,0,2,0,3,0,0,3,0,0,0,4,0,0,0,7},
+    {7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7},
+    {7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7}
+    };
+public:
+    void printLogo()
+    {
+        for(int i = 0; i<9; i++)
+    {
+        for(int j=0; j<45; j++)
+        {
+            if(logo[i][j] == 0)
+                std::cout << "  ";
+            else if(logo[i][j] == 1)
+            {
+                textcolor(DarkYellow);
+                std::cout << "‚ñ† ";
+            }
+            else if(logo[i][j] == 2)
+            {
+                textcolor(BLUE);
+                std::cout <<"‚ñ† ";
+            }
+            else if(logo[i][j] == 3)
+            {
+                textcolor(RED);
+                std::cout <<"‚ñ† ";
+            }
+            else if(logo[i][j] == 4)
+            {
+                textcolor(GREEN);
+                std::cout <<"‚ñ† ";
+            }
+            else if(logo[i][j] == 7)
+            {
+                textcolor(PURPLE);
+                std::cout <<"‚ñ° ";
+            }
+        }
+        std::cout << std::endl;
+    }
+    }
+    void textcolor(int colorNum)
+    {
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorNum);
+    }
+};
 
 
 std::string name = "[DEFAULT]";
@@ -61,7 +116,7 @@ int main(int argc, char* argv[])
     hRcvThread=
         (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)&hSock, 0, NULL);
 
-    WaitForSingleObject(hSndThread, INFINITE);// æ≤∑πµÂ ¡æ∑· ∞®¡ˆ (INFINITE->«‘ºˆ∞° ¡æ∑·µ… ∂ß ±Ó¡ˆ ∞™¿ª π›»Ø «œ¡ˆ æ ¿Ω)
+    WaitForSingleObject(hSndThread, INFINITE);// Ïì∞Î†àÎìú Ï¢ÖÎ£å Í∞êÏßÄ (INFINITE->Ìï®ÏàòÍ∞Ä Ï¢ÖÎ£åÎê† Îïå ÍπåÏßÄ Í∞íÏùÑ Î∞òÌôò ÌïòÏßÄ ÏïäÏùå)
     WaitForSingleObject(hRcvThread, INFINITE);
 
     closesocket(hSock);
@@ -73,6 +128,7 @@ unsigned WINAPI SendMsg(void* arg)
 {
     SOCKET hSock=*((SOCKET*)arg);
     char msgWithName[BUF_SIZE];
+    ImgArray a;
     while(1)
     {
         getline(std::cin, msg);
@@ -81,12 +137,12 @@ unsigned WINAPI SendMsg(void* arg)
             closesocket(hSock);
             exit(0);
         }
-        std::string totalMsg = "[" + name + "]" + msg;
-        int size = totalMsg.length();
-        std::cout << "∫∏≥Ω ∏ﬁΩ√¡ˆ : " << totalMsg << std::endl;
-        strcpy(msgWithName, totalMsg.c_str());
+        // std::string totalMsg = "[" + name + "]" + msg;
+        // int size = totalMsg.length();
+        int size = msg.length();
+        std::cout << "[To server]\n" << msg << std::endl;
+        strcpy(msgWithName, msg.c_str());
         send(hSock, msgWithName, size, 0);
-
     }
     return 0;
 }
@@ -96,13 +152,14 @@ unsigned WINAPI RecvMsg(void* arg)
     int hSock = *((SOCKET*)arg);
     char msgWithName[BUF_SIZE];
     int strLen;
+    ImgArray b;
     while(1)
     {
         strLen = recv(hSock, msgWithName, BUF_SIZE, 0);
         if(strLen == -1)
             return -1;
         msgWithName[strLen]=0;
-        std::cout << "πﬁ¿∫ ∏ﬁΩ√¡ˆ : " << msgWithName << std::endl;
+        std::cout << "[From server]\n" << msgWithName << std::endl;
     }
     return 0;
 }
@@ -113,8 +170,5 @@ void ErrorHandling(char *msg)
     exit(1);
 }
 
-void textcolor(int colorNum)
-{
-    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorNum);
-}
+
 
